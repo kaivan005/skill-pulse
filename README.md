@@ -20,6 +20,29 @@ The stack contains:
 
 The API container waits for PostgreSQL, creates the schema, and seeds the demo dataset automatically. The API is also available at [http://localhost:4000/api/health](http://localhost:4000/api/health).
 
+## GitHub Pages and CI/CD
+
+GitHub Pages hosts the React frontend only. It cannot run the Express API or PostgreSQL. Deploy the API separately with Docker, Render, Railway, Fly.io, or another Node-compatible host, then set its public HTTPS URL as the frontend API base.
+
+The workflow at `.github/workflows/deploy-pages.yml` runs on every push to `main`, validates the API, builds the frontend, and deploys `frontend/dist` to GitHub Pages.
+
+After pushing the project:
+
+1. Open GitHub repository **Settings → Pages** and select **GitHub Actions** as the source.
+2. Open **Settings → Secrets and variables → Actions → Variables**.
+3. Add a repository variable named `VITE_API_URL`, for example `https://api.example.com`.
+4. Run the workflow or push to `main`.
+
+The Pages URL will be `https://YOUR_USERNAME.github.io/skill-pulse/`.
+
+For local frontend development, save frontend settings in `frontend/.env`:
+
+```env
+VITE_API_URL=
+```
+
+Leave it empty when using the Vite proxy with the local API. Do not put `DATABASE_URL` in the frontend environment. Neon credentials belong only in the root `.env`, which is ignored by Git, or in the backend hosting provider's private environment settings.
+
 ## Connect Neon PostgreSQL
 
 1. Copy the environment template: `cp .env.example .env`.

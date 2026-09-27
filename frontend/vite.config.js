@@ -4,6 +4,7 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: process.env.GITHUB_ACTIONS ? '/skill-pulse/' : '/',
   server: {
     proxy: {
       '/api': 'http://localhost:4000'

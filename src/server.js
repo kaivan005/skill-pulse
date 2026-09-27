@@ -21,6 +21,13 @@ const fallback = {
 }
 let ready = false
 const mode = 'postgresql'
+const demoUsers = {
+  'admin@skillpulse.demo': { password: 'Admin@123', role: 'Admin', name: 'Arjun Kapoor', initials: 'AK' },
+  'provider@skillpulse.demo': { password: 'Provider@123', role: 'Provider', name: 'Meera Shah', initials: 'MS' },
+  'employer@skillpulse.demo': { password: 'Employer@123', role: 'Employer', name: 'Rohan Verma', initials: 'RV' },
+  'trainee@skillpulse.demo': { password: 'Trainee@123', role: 'Trainee', name: 'Aarav Mehta', initials: 'AM' },
+}
+const allowedRoles = (...roles) => (req, res, next) => { const role = req.header('x-skillpulse-role'); if (!role || !roles.includes(role)) return res.status(403).json({ error: 'Role is not allowed to perform this action' }); req.userRole = role; next() }
 
 async function ensureSchema() {
   await pool.query(`
@@ -40,8 +47,9 @@ async function connectDatabase() {
 
 app.use(cors())
 app.use(express.json())
+app.post('/api/auth/login', (req, res) => { const user = demoUsers[req.body?.email]; if (!user || user.password !== req.body?.password) return res.status(401).json({ error: 'Invalid demo credentials' }); res.json({ ...user, email: req.body.email, token: `demo-${user.role.toLowerCase()}-session` }) })
 app.get('/api/health', (_req, res) => res.json({ ok: true, mode: ready ? mode : 'demo', database: 'skillpulse', databaseHost, ivrEnabled: false }))
-app.get('/api/dashboard', async (req, res) => {
+app.get('/api/dashboard', allowedRoles('Admin', 'Provider', 'Employer', 'Trainee'), async (req, res) => {
   const district = req.query.district
   if (!ready) return res.json({ ...fallback, mode: 'demo' })
   const values = district && district !== 'All districts' ? [district] : []
@@ -58,10 +66,16 @@ app.get('/api/dashboard', async (req, res) => {
     return res.json({ stats: { total: totalCount, completed: completed.rows[0].count, employed: employed.rows[0].count, retained: Math.round(totalCount * 0.43) }, trainees: trainees.rows, funnel: fallback.funnel, followups: followups.rows, mode })
   } catch (error) { return res.status(500).json({ error: 'Unable to load dashboard data', detail: error.message }) }
 })
-app.post('/api/initiatives/:id/sync', async (req, res) => {
+app.post('/api/initiatives/:id/sync', allowedRoles('Admin', 'Provider'), async (req, res) => {
   const result = { initiativeId: req.params.id, imported: 128, updated: 93, courses: 21, review: 14, syncedAt: new Date().toISOString() }
   if (ready) await pool.query('INSERT INTO audit_logs (actor, action, record, result) VALUES ($1, $2, $3, $4)', ['demo-admin', 'initiative_sync', req.params.id, result])
   res.json(result)
+})
+app.post('/api/actions', allowedRoles('Admin', 'Provider', 'Employer', 'Trainee'), async (req, res) => {
+  const { action, record = 'workspace' } = req.body || {}
+  if (!action) return res.status(400).json({ error: 'Action is required' })
+  if (ready) await pool.query('INSERT INTO audit_logs (actor, action, record, result) VALUES ($1, $2, $3, $4)', [req.userRole, action, record, { status: 'completed' }])
+  res.json({ ok: true, action, role: req.userRole, status: 'completed', timestamp: new Date().toISOString() })
 })
 
 await connectDatabase()
