@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: skillpulse-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: skillpulse
+      POSTGRES_USER: skillpulse
+      POSTGRES_PASSWORD: skillpulse
+    volumes:
+      - skillpulse_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skillpulse -d skillpulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build: ./backend
+    container_name: skillpulse-api
+    restart: unless-stopped
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgresql://skillpulse:skillpulse@postgres:5432/skillpulse
+      IVR_ENABLED: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build: ./frontend
+    container_name: skillpulse-frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "3000:80"
+
+volumes:
+  skillpulse_pgdata:
