@@ -16,7 +16,7 @@ services:
       retries: 12
 
   api:
-    build: ./backend
+    build: .
     container_name: skillpulse-api
     restart: unless-stopped
     environment:

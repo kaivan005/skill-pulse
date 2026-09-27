@@ -39,7 +39,6 @@ docker compose down -v
 ## Local development without Docker
 
 ```sh
-cd backend
 cp .env.example .env
 npm install
 npm run seed
@@ -51,7 +50,7 @@ npm install
 npm start
 ```
 
-For local development, PostgreSQL must be available at the `DATABASE_URL` in `backend/.env`. The Vite dev server proxies `/api` to port `4000`.
+For local development, PostgreSQL must be available at the `DATABASE_URL` in `.env`. The Vite dev server proxies `/api` to port `4000`.
 
 ## PostgreSQL data model
 
@@ -68,7 +67,7 @@ git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
 git push -u origin main
 ```
 
-`.env`, database files, `node_modules`, build output, and logs are ignored. Do not commit database passwords or API credentials. The committed `backend/.env.example` is safe to share.
+`.env`, database files, `node_modules`, build output, and logs are ignored. Do not commit database passwords or API credentials. The committed `.env.example` is safe to share.
 
 ## IVR status
 
