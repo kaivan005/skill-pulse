@@ -21,8 +21,9 @@ services:
     restart: unless-stopped
     environment:
       PORT: 4000
-      DATABASE_URL: postgresql://skillpulse:skillpulse@postgres:5432/skillpulse
-      IVR_ENABLED: "false"
+      DATABASE_URL: ${DATABASE_URL:-postgresql://skillpulse:skillpulse@postgres:5432/skillpulse}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+      IVR_ENABLED: ${IVR_ENABLED:-false}
     depends_on:
       postgres:
         condition: service_healthy

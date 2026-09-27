@@ -18,6 +18,10 @@ const trainees = Array.from({ length: 24 }, (_, index) => ({
 }))
 
 async function seed() {
+  if (process.env.SEED_DEMO_DATA === 'false') {
+    console.log('SEED_DEMO_DATA=false; leaving PostgreSQL data unchanged')
+    return
+  }
   await pool.query(`
     CREATE TABLE IF NOT EXISTS trainees (id SERIAL PRIMARY KEY, trainee_id TEXT UNIQUE NOT NULL, name TEXT NOT NULL, email TEXT, district TEXT, course TEXT, status TEXT, salary INTEGER, consent BOOLEAN DEFAULT FALSE, demo BOOLEAN DEFAULT TRUE, created_at TIMESTAMPTZ DEFAULT NOW());
     CREATE TABLE IF NOT EXISTS courses (id SERIAL PRIMARY KEY, course_id TEXT UNIQUE NOT NULL, name TEXT NOT NULL, skills JSONB DEFAULT '[]', duration_weeks INTEGER, provider TEXT, demo BOOLEAN DEFAULT TRUE);

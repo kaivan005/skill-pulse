@@ -4,4 +4,4 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 COPY src ./src
 EXPOSE 4000
-CMD ["sh", "-c", "npm run seed && npm start"]
+CMD ["sh", "-c", "if [ \"$SEED_DEMO_DATA\" != \"false\" ]; then npm run seed; fi && npm start"]

@@ -20,6 +20,16 @@ The stack contains:
 
 The API container waits for PostgreSQL, creates the schema, and seeds the demo dataset automatically. The API is also available at [http://localhost:4000/api/health](http://localhost:4000/api/health).
 
+## Connect Neon PostgreSQL
+
+1. Copy the environment template: `cp .env.example .env`.
+2. In the Neon console, copy the **pooled connection string**.
+3. Paste it into `.env` as `DATABASE_URL`. It should include `?sslmode=require`.
+4. Keep `SEED_DEMO_DATA=true` for the first run to create tables and load the demo dataset. Set it to `false` when you want to preserve existing Neon data.
+5. Start the stack: `docker compose up --build`.
+
+The API health response shows the connected database host without exposing credentials. Dashboard metrics and trainee records are read from PostgreSQL whenever the connection is healthy; demo fallback is used only when the database cannot be reached.
+
 ## Useful commands
 
 ```sh

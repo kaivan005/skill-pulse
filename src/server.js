@@ -7,6 +7,7 @@ const { Pool } = pg
 const app = express()
 const port = Number(process.env.PORT || 4000)
 const pool = new Pool({ connectionString: process.env.DATABASE_URL || 'postgresql://skillpulse:skillpulse@127.0.0.1:5432/skillpulse' })
+const databaseHost = (() => { try { return new URL(process.env.DATABASE_URL || 'postgresql://skillpulse:skillpulse@127.0.0.1:5432/skillpulse').hostname } catch { return 'invalid-connection-string' } })()
 const fallback = {
   trainees: [
     { initials: 'AM', name: 'Aarav Mehta', course: 'Web Development', district: 'Pune', status: 'Employed' },
@@ -39,7 +40,7 @@ async function connectDatabase() {
 
 app.use(cors())
 app.use(express.json())
-app.get('/api/health', (_req, res) => res.json({ ok: true, mode: ready ? mode : 'demo', database: 'skillpulse', ivrEnabled: false }))
+app.get('/api/health', (_req, res) => res.json({ ok: true, mode: ready ? mode : 'demo', database: 'skillpulse', databaseHost, ivrEnabled: false }))
 app.get('/api/dashboard', async (req, res) => {
   const district = req.query.district
   if (!ready) return res.json({ ...fallback, mode: 'demo' })
